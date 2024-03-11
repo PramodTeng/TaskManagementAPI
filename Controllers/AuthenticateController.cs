@@ -57,7 +57,7 @@ namespace Task_Management_API.Controllers
                 return Ok(new
                 {
                     token = new JwtSecurityTokenHandler().WriteToken(token),
-                    expiration = token.ValidTo
+                    expiration = token.ValidTo.ToString("yyyy-MM-dd hh:mm:ss")
                 });
             }
             return Unauthorized();
@@ -132,5 +132,6 @@ namespace Task_Management_API.Controllers
 
             return token;
         }
+       
     }
 }

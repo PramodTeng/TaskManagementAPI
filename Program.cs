@@ -16,6 +16,9 @@ using Hangfire;
 using Hangfire.SqlServer;
 using Task_Management_API;
 using Task_Management_API.Middleware;
+using FluentValidation.AspNetCore;
+using Task_Management_API.Model.RequestModel;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 ConfigurationManager configuration = builder.Configuration;
@@ -50,6 +53,16 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 
         };
+        option.Events = new JwtBearerEvents
+        {
+           OnMessageReceived = context =>
+            {
+                // Remove "Bearer" from the Authorization header
+                var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Replace("Bearer ", "");
+                context.Token = token;
+                return Task.CompletedTask;
+            }
+        };
     });
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -77,7 +90,7 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<ITaskDependencyService, TaskDependencyService>();
 builder.Services.AddScoped<IHangfireBackgroundJobService, HangfireBackgroundJobService>();
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddFluentValidation(fv => fv.RegisterValidatorsFromAssembly(Assembly.GetExecutingAssembly()));
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
